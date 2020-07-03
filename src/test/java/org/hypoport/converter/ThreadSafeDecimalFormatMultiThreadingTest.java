@@ -21,29 +21,29 @@ import static org.testng.Assert.assertTrue;
 public class ThreadSafeDecimalFormatMultiThreadingTest {
 
   private final int threadCount = 20;
-  private final int instanzCount = 4;
+  private final int instanceCount = 4;
   private final int testCount = 1000;
 
   private final Random random = new Random();
 
-  private LinkedList<ThreadSafeDecimalFormat> underTest = new LinkedList<>();
+  private final List<ThreadSafeNumberFormat> underTest = new LinkedList<>();
 
   @BeforeClass
   public void setupClass() {
-    IntStream.rangeClosed(1, instanzCount).forEach(v -> underTest.add(new ThreadSafeDecimalFormat()));
+    IntStream.rangeClosed(1, instanceCount).forEach(v -> underTest.add(new ThreadSafeNumberFormat()));
   }
 
-  public void multithreaded_eineInstanz_ok() throws Exception {
+  public void multithreaded_singleInstance_ok() throws Exception {
     for (int i = 0; i < testCount; i++) {
       final List<Optional<String>> optionals = executeParallel(createCallables(true), threadCount);
-      optionals.stream().forEach(value -> assertTrue(value.isPresent()));
+      optionals.forEach(value -> assertTrue(value.isPresent()));
     }
   }
 
-  public void multithreaded_mehrereInstanzen_ok() throws Exception {
+  public void multithreaded_multipleInstances_ok() throws Exception {
     for (int i = 0; i < testCount * 10; i++) {
       final List<Optional<String>> optionals = executeParallel(createCallables(false), threadCount);
-      optionals.stream().forEach(value -> assertTrue(value.isPresent()));
+      optionals.forEach(value -> assertTrue(value.isPresent()));
     }
   }
 
@@ -54,8 +54,8 @@ public class ThreadSafeDecimalFormatMultiThreadingTest {
   private Callable<Optional<String>> createCallable(final boolean isSingleInstance) {
     return () -> {
       try {
-        final ThreadSafeDecimalFormat decimalFormat = isSingleInstance ? underTest.get(0) : underTest.get(random.nextInt(instanzCount));
-        return of(decimalFormat.format(new BigDecimal(random.nextInt())));
+        final ThreadSafeNumberFormat numberFormat = isSingleInstance ? underTest.get(0) : underTest.get(random.nextInt(instanceCount));
+        return of(numberFormat.format(new BigDecimal(random.nextInt())));
       }
       catch (Exception e) {
         return empty();
